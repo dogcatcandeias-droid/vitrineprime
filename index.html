@@ -22,14 +22,22 @@
     .logo { display: flex; align-items: center; gap: 12px; }
     .logo svg { width: 50px; height: 50px; }
     .brand { font-weight: 700; font-size: 22px; }
-    nav a { color: #fff; margin-left: 20px; font-weight: 600; transition: color var(--transition); }
+    nav { display: flex; gap: 20px; }
+    nav a { color: #fff; font-weight: 600; transition: color var(--transition); }
     nav a:hover { color: var(--accent); }
+
+    /* Menu hambúrguer para celular */
+    .hamburger { display: none; flex-direction: column; cursor: pointer; gap: 4px; }
+    .hamburger span { width: 25px; height: 3px; background: #fff; border-radius: 2px; transition: all 0.3s; }
+
     .container { max-width: 1200px; margin: 32px auto; padding: 0 16px; }
     .hero { display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; }
     .hero h1 { font-size: 32px; color: var(--blue); }
     .hero p { font-size: 16px; color: var(--muted); max-width: 700px; }
+
     .grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); gap: 24px; margin-top: 32px; }
-    .product, .blog-post { background: var(--card); border-radius: 16px; overflow: hidden; border: 1px solid rgba(15,23,42,0.08); transition: transform var(--transition), box-shadow var(--transition); cursor: pointer; }
+    .product, .blog-post { background: var(--card); border-radius: 16px; overflow: hidden; border: 1px solid rgba(15,23,42,0.08); transition: transform var(--transition), box-shadow var(--transition); cursor: pointer; opacity: 0; transform: translateY(20px); }
+    .product.show, .blog-post.show { opacity: 1; transform: translateY(0); transition: all 0.5s ease; }
     .product:hover, .blog-post:hover { transform: translateY(-6px); box-shadow: var(--hover-shadow); }
     .product img, .blog-post img { width: 100%; height: 180px; object-fit: cover; display: block; border-bottom: 1px solid #eee; }
     .product-body, .blog-body { padding: 16px; }
@@ -41,22 +49,53 @@
     .btn.whatsapp:hover { background: #1ebe5c; }
     .btn.instagram { background: var(--accent); color: #fff; margin-left: 8px; }
     .btn.instagram:hover { background: #089796; }
+
     .thumbnail-container { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
     .thumbnail-container img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid #ccc; cursor: pointer; transition: transform var(--transition); }
     .thumbnail-container img:hover { transform: scale(1.1); }
+
     #imageModal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); justify-content:center; align-items:center; z-index: 10000; }
     #imageModal img { max-width: 90%; max-height: 90%; border-radius: 12px; }
     #imageModal span { position: absolute; top: 20px; right: 30px; color: #fff; font-size: 32px; cursor: pointer; }
     .modal-nav { position: absolute; top:50%; transform: translateY(-50%); color: #fff; font-size: 48px; cursor: pointer; user-select:none; }
     .modal-nav.left { left: 30px; }
     .modal-nav.right { right: 30px; }
+
     footer { max-width: 1200px; margin: 48px auto; padding: 32px 16px; color: var(--muted); text-align: center; font-size: 14px; background: #e0f2f1; border-radius: 16px; }
     footer h3 { margin-bottom: 12px; color: var(--blue); font-size: 18px; }
     footer p, footer a { margin: 6px 0; }
     footer a { color: var(--blue); }
+
     .blog-content { max-height: 80px; overflow: hidden; transition: max-height 0.3s ease; }
     .blog-content.expanded { max-height: 500px; }
-    @media(max-width:768px){.grid{grid-template-columns:1fr;}}
+
+    /* Botão flutuante WhatsApp */
+    .whatsapp-float {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #25d366;
+      color: #fff;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 32px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      z-index: 9999;
+      transition: transform 0.3s;
+    }
+    .whatsapp-float:hover { transform: scale(1.1); }
+
+    @media(max-width:768px){
+      .grid{grid-template-columns:1fr;}
+      nav { display: none; flex-direction: column; background: var(--blue); position: absolute; top: 72px; right: 0; width: 200px; padding: 16px; border-radius: 0 0 0 12px; }
+      nav.show { display: flex; }
+      .hamburger { display: flex; }
+      nav a { margin: 10px 0; }
+    }
   </style>
 </head>
 <body>
@@ -74,7 +113,12 @@
       <div class="tag">Produtos para Pet • Beleza • Eletrônicos • Casa</div>
     </div>
   </div>
-  <nav>
+  <div class="hamburger" onclick="toggleMenu()">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+  <nav id="navMenu">
     <a href="#produtos">Produtos</a>
     <a href="#blog">Blog/Dicas</a>
     <a href="#contato">Contato</a>
@@ -88,7 +132,7 @@
   </section>
 
   <section id="produtos" class="grid">
-    <div class="product">
+    <div class="product show">
       <img id="main-image-1" src="https://down-br.img.susercontent.com/file/br-11134207-81z1k-mfxou46e7w1z1b@resize_w450_nl.webp" alt="Carregador" onclick="openModal(this.src)" />
       <div class="product-body">
         <p class="product-title">Carregador Portátil Indução Magsafe 5000/10000mAh</p>
@@ -96,18 +140,13 @@
         <div class="price">R$ 69,90</div>
         <div class="thumbnail-container">
           <img src="https://down-br.img.susercontent.com/file/br-11134207-81z1k-mfxou46e7w1z1b@resize_w450_nl.webp" onclick="document.getElementById('main-image-1').src=this.src" />
-          <img src="https://down-br.img.susercontent.com/file/br-11134207-81z1k-mfxou46lh5ola6.webp" onclick="document.getElementById('main-image-1').src=this.src" />
-          <img src="https://down-br.img.susercontent.com/file/br-11134207-81z1k-mfxou46egbgn88.webp" onclick="document.getElementById('main-image-1').src=this.src" />
-          <img src="https://down-br.img.susercontent.com/file/br-11134207-81z1k-mfxou46ec3rb89.webp" onclick="document.getElementById('main-image-1').src=this.src" />
-          <img src="https://down-br.img.susercontent.com/file/br-11134207-81z1k-mfxou46e6hhj26.webp" onclick="document.getElementById('main-image-1').src=this.src" />
-          <img src="https://down-br.img.susercontent.com/file/br-11134207-81z1k-mfxou46ehq1355.webp" onclick="document.getElementById('main-image-1').src=this.src" />
         </div>
         <a class="btn whatsapp" href="https://wa.me/5511999999999?text=Quero%20encomendar%20o%20Carregador" target="_blank">WhatsApp</a>
         <a class="btn instagram" href="#" onclick="instagramGreeting()">Instagram</a>
       </div>
     </div>
 
-    <div class="product">
+    <div class="product show">
       <img id="main-image-2" src="https://down-br.img.susercontent.com/file/sg-11134201-7ravc-ma7vvutvy56r1a.webp" alt="Limpador" onclick="openModal(this.src)" />
       <div class="product-body">
         <p class="product-title">Limpador Elétrico 5 em 1 Multiuso com Bateria Recarregável</p>
@@ -115,10 +154,6 @@
         <div class="price">R$ 50,00</div>
         <div class="thumbnail-container">
           <img src="https://down-br.img.susercontent.com/file/sg-11134201-7ravc-ma7vvutvy56r1a.webp" onclick="document.getElementById('main-image-2').src=this.src" />
-          <img src="https://down-br.img.susercontent.com/file/br-11134207-7r98o-m66bjvydllqo96.webp" onclick="document.getElementById('main-image-2').src=this.src" />
-          <img src="https://down-br.img.susercontent.com/file/sg-11134201-7rccl-lr1pwmrulqcrab.webp" onclick="document.getElementById('main-image-2').src=this.src" />
-          <img src="https://down-br.img.susercontent.com/file/sg-11134201-7reqg-m1sxuspkqxfj23.webp" onclick="document.getElementById('main-image-2').src=this.src" />
-          <img src="https://down-br.img.susercontent.com/file/sg-11134201-7ra26-m4o40j3smxkkb1.webp" onclick="document.getElementById('main-image-2').src=this.src" />
         </div>
         <a class="btn whatsapp" href="https://wa.me/5511999999999?text=Quero%20encomendar%20o%20Limpador" target="_blank">WhatsApp</a>
         <a class="btn instagram" href="#" onclick="instagramGreeting()">Instagram</a>
@@ -129,7 +164,7 @@
   <section id="blog">
     <h2 style="color: var(--blue); margin-top:40px;">💡 Blog & Dicas</h2>
     <div class="grid">
-      <div class="blog-post">
+      <div class="blog-post show">
         <img src="https://down-br.img.susercontent.com/file/sg-11134201-7ravc-ma7vvutvy56r1a.webp" alt="Limpador Elétrico" />
         <div class="blog-body">
           <p class="blog-title">Limpador Elétrico 5 em 1 — Como usar</p>
@@ -168,43 +203,60 @@
   <p>© 2025 Vitrine Prime</p>
 </footer>
 
+<!-- Botão flutuante WhatsApp -->
+<a href="https://wa.me/5511999999999" target="_blank" class="whatsapp-float">💬</a>
+
 <script>
+  // Modal
   let modalImages = [];
   let currentIndex = 0;
 
   function openModal(src) {
-    modalImages = [src]; // Por enquanto só abre a imagem clicada
+    modalImages = [src]; 
     currentIndex = 0;
     document.getElementById('modalImage').src = modalImages[currentIndex];
     document.getElementById('imageModal').style.display = 'flex';
   }
-
-  function closeModal() {
-    document.getElementById('imageModal').style.display = 'none';
-  }
-
+  function closeModal() { document.getElementById('imageModal').style.display = 'none'; }
   function prevImage() {
-    if(modalImages.length < 2) return;
-    currentIndex = (currentIndex - 1 + modalImages.length) % modalImages.length;
-    document.getElementById('modalImage').src = modalImages[currentIndex];
+    if(modalImages.length<2) return;
+    currentIndex=(currentIndex-1+modalImages.length)%modalImages.length;
+    document.getElementById('modalImage').src=modalImages[currentIndex];
   }
-
   function nextImage() {
-    if(modalImages.length < 2) return;
-    currentIndex = (currentIndex + 1) % modalImages.length;
-    document.getElementById('modalImage').src = modalImages[currentIndex];
+    if(modalImages.length<2) return;
+    currentIndex=(currentIndex+1)%modalImages.length;
+    document.getElementById('modalImage').src=modalImages[currentIndex];
   }
 
+  // Instagram
   function instagramGreeting() {
     alert('Olá! 👋 Vi seus produtos na Vitrine Prime e quero saber mais.');
     window.open('https://www.instagram.com/vitrineprime.store?igsh=ZHJuOXk0enpzcmN3','_blank');
   }
 
+  // Blog toggle
   function toggleBlog(id, btn) {
     const content = document.getElementById(id);
     content.classList.toggle('expanded');
     btn.textContent = content.classList.contains('expanded') ? 'Leia menos' : 'Leia mais';
   }
+
+  // Menu mobile
+  function toggleMenu() {
+    document.getElementById('navMenu').classList.toggle('show');
+  }
+
+  // Fade-in animation on scroll
+  function reveal() {
+    const elements = document.querySelectorAll('.product, .blog-post');
+    elements.forEach(el => {
+      const top = el.getBoundingClientRect().top;
+      if(top < window.innerHeight - 100) el.classList.add('show');
+    });
+  }
+  window.addEventListener('scroll', reveal);
+  window.addEventListener('load', reveal);
 </script>
 
 </body>
